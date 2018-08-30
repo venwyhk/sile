@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="Sile"
+            id="Sile">
+      </category>
+      <wizard
+            name="Sile Project"
+            icon="icons/logo.png"
+            category="Sile"
+            class="com.ikasoa.sile.wizards.NewWizard"
+            id="com.ikasoa.sile.wizards.NewWizard">
+      </wizard>
+   </extension>
+
+</plugin>
