@@ -2,53 +2,31 @@ package com.ikasoa.sile.wizards;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.actions.WorkspaceModifyOperation;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+
+import com.ikasoa.sile.elements.Directory;
+import com.ikasoa.sile.elements.Sources;
+import com.ikasoa.sile.elements.DirectoryTypeEnum;
+import com.ikasoa.sile.xml.XmlSourceServiceImpl;
+
 import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.PreferenceConstants;
-import org.eclipse.jface.operation.*;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.core.internal.resources.Folder;
 import org.eclipse.core.resources.*;
 
 import java.io.*;
 import org.eclipse.ui.*;
-
-/**
- * This is a sample new wizard. Its role is to create a new file resource in the
- * provided container. If the container resource (a folder or a project) is
- * selected in the workspace when the wizard is opened, it will accept it as the
- * target container. The wizard creates one file with the extension "mpe". If a
- * sample multi-page editor (also available as a template) is registered for the
- * same extension, it will be able to open it.
- */
 
 public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 
@@ -57,8 +35,6 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 	// private EclikasoaImportWizardPage mainPage;
 
 	private IStructuredSelection selection;
-
-	private final static String FILE_SPLIT_STR = System.getProperty("file.separator");
 
 	/**
 	 * Constructor for EclikasoaNewWizard.
@@ -85,7 +61,7 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 	 */
 	@Override
 	public boolean performFinish() {
-		
+
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 
 		final IProject project = root.getProject(page.getProjectName());
@@ -124,89 +100,20 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 			return false;
 		}
 
-//		IFolder binFolder = javaProject.getProject().getFolder("bin");
-//		try {
-//			binFolder.create(true, true, null);
-//			javaProject.setOutputLocation(binFolder.getFullPath(), null);
-//		} catch (CoreException e) {
-//			return false;
-//		}
-
 		try {
-			IProjectDescription description2 = javaProject.getProject().getDescription();
-			ICommand command = description2.newCommand();
-			command.setBuilderName("org.eclipse.jdt.core.javabuilder");
-			description2.setBuildSpec(new ICommand[] { command });
-			description2.setNatureIds(new String[] { "org.eclipse.jdt.core.javanature" });
-			javaProject.getProject().setDescription(description2, null);
-		} catch (CoreException e) {
-			return false;
-		}
-
-		IFolder srcFolder = javaProject.getProject().getFolder("src");
-		try {
-			srcFolder.create(true, true, null);
-			// this.createFolder(srcFolder);
-			// 创建SourceLibrary
-			IClasspathEntry srcClasspathEntry = JavaCore.newSourceEntry(srcFolder.getFullPath());
-
-			// 得到旧的build path
-			IClasspathEntry[] oldClasspathEntries = javaProject.readRawClasspath();
-
-			// 添加新的
-			List<IClasspathEntry> list = new ArrayList<>();
-			list.addAll(Arrays.asList(oldClasspathEntries));
-			list.add(srcClasspathEntry);
-
-			// 原来存在一个与工程名相同的源文件夹,必须先删除
-			IClasspathEntry temp = JavaCore.newSourceEntry(new Path(FILE_SPLIT_STR + page.getProjectName()));
-			if (list.contains(temp)) {
-				list.remove(temp);
+			// 读取配置文件
+			Sources sources = new XmlSourceServiceImpl().getSrouces(new URL(page.getConfigureFileUrl()));
+			// 创建文件
+			buildFiles(javaProject, sources.getFileList(), null);
+			for (Directory directory : sources.getDirectoryList()) {
+				buildDirectory(javaProject, directory);
 			}
 
-			javaProject.setRawClasspath(list.toArray(new IClasspathEntry[list.size()]), null);
-		} catch (CoreException e) {
-			return false;
-		}
-
-		IPackageFragmentRoot[] IPackageFragmentRoots = javaProject
-				.getPackageFragmentRoots(JavaCore.newSourceEntry(srcFolder.getFullPath()));
-		IPackageFragmentRoot projectRoot = javaProject.getPackageFragmentRoot(javaProject.getResource());
-		IPackageFragmentRoot projectSrcRoot = projectRoot;
-		if (IPackageFragmentRoots.length > 0)
-			projectSrcRoot = javaProject.getPackageFragmentRoot(IPackageFragmentRoots[0].getResource());
-
-		try {
-			IPackageFragment packageFragment = projectSrcRoot.createPackageFragment(page.getPackageName(), true, null);
-			String javaCode = "package " + page.getPackageName()
-					+ ";public class HelloWorld{public static void main(String[] args){System.out.println(\"helloworld!\");}}";
-			packageFragment.createCompilationUnit("HelloWorld.java", javaCode, true, new NullProgressMonitor());
-		} catch (JavaModelException e) {
-			return false;
-		}
-		
-		//
-		
-		
-		IFile pomFile = javaProject.getProject().getFile("pom.xml");
-		try {
-			URL u = new URL("https://raw.githubusercontent.com/venwyhk/simpleryo_shop_demo/master/pom.xml");
-            HttpURLConnection conn = (HttpURLConnection)u.openConnection();
-            InputStream inputStream = conn.getInputStream();
-			pomFile.create(inputStream, true, new NullProgressMonitor());
 		} catch (Exception e) {
+			System.out.println(e);
 			return false;
 		}
-		
-		
-		IFolder resourcesFolder = javaProject.getProject().getFolder("resources");
-		try {
-			resourcesFolder.create(true, true, null);
-		} catch (CoreException e) {
-			return false;
-		}
-		
-		
+
 		return true;
 	}
 
@@ -214,5 +121,96 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.selection = selection;
 	}
-	
+
+	private void buildFiles(IJavaProject javaProject, List<com.ikasoa.sile.elements.File> fileList, String path)
+			throws Exception {
+		for (com.ikasoa.sile.elements.File file : fileList) {
+			URL u = new URL(file.getUrl());
+			HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+			InputStream inputStream = conn.getInputStream();
+			String fileName = file.getName();
+			if (path != null)
+				fileName = path + File.separator + file.getName();
+			javaProject.getProject().getFile(fileName).create(inputStream, true, new NullProgressMonitor());
+		}
+	}
+
+	private void buildDirectory(IJavaProject javaProject, Directory directory) throws Exception {
+		switch (directory.getType()) {
+		case SOURCE:
+			buildSource(javaProject, directory);
+		case FOLDER:
+			buildFolder(javaProject, directory.getName());
+		default:
+			break;
+		}
+	}
+
+	private void buildSource(IJavaProject javaProject, Directory directory) throws Exception {
+
+		// 创建目录
+		IFolder srcFolder = buildFolder(javaProject, directory.getName());
+
+		// this.createFolder(srcFolder);
+		// 创建SourceLibrary
+		IClasspathEntry srcClasspathEntry = JavaCore.newSourceEntry(srcFolder.getFullPath());
+
+		// 得到旧的build path
+		IClasspathEntry[] oldClasspathEntries = javaProject.readRawClasspath();
+
+		// 添加新的
+		List<IClasspathEntry> list = new ArrayList<>();
+		list.addAll(Arrays.asList(oldClasspathEntries));
+		list.add(srcClasspathEntry);
+
+		// 原来存在一个与工程名相同的源文件夹,必须先删除
+		IClasspathEntry temp = JavaCore.newSourceEntry(new Path(File.separator + page.getProjectName()));
+		if (list.contains(temp))
+			list.remove(temp);
+
+		javaProject.setRawClasspath(list.toArray(new IClasspathEntry[list.size()]), null);
+
+		// 创建包
+		String packageName = buildPackage(javaProject, directory.getDirectoryList(), directory.getName());
+		System.out.println("包名 : " + packageName);
+
+		// 创建文件
+		buildFiles(javaProject, directory.getFileList(), directory.getName());
+	}
+
+	private String buildPackage(IJavaProject javaProject, List<Directory> directoryList, String path) throws Exception {
+		String packageName = "";
+		// 创建包
+		for (Directory cDir : directoryList) {
+			if (DirectoryTypeEnum.PACKAGE.getValue().equals(cDir.getType().getValue()))
+				packageName = cDir.getName().replace("/", ".");
+			String fullPath = path + File.separator + cDir.getName();
+			buildFolder(javaProject, fullPath);
+			buildFiles(javaProject, cDir.getFileList(), fullPath);
+			// 创建子包
+			buildPackage(javaProject, cDir.getDirectoryList(), fullPath);
+		}
+		return packageName;
+	}
+
+	private IFolder buildFolder(IJavaProject javaProject, String name) throws Exception {
+		IFolder folder = javaProject.getProject().getFolder(name);
+		if (!folder.exists()) {
+			createParentFolder(folder);
+			folder.create(true, true, null);
+		}
+		return folder;
+	}
+
+	private IFolder createParentFolder(IFolder folder) throws Exception {
+		if (!folder.getParent().exists() && folder.getParent() instanceof IFolder) {
+			IFolder parentFolder = (IFolder) folder.getParent();
+			IFolder _parentFolder = createParentFolder(parentFolder);
+			_parentFolder.create(true, true, null);
+			System.out.println("--- : " + _parentFolder.getName());
+			return parentFolder.exists() ? folder : parentFolder;
+		} else
+			return folder;
+	}
+
 }

@@ -54,6 +54,7 @@ public class XmlSourceServiceImpl implements SourceService {
 
 	@Override
 	public String replace(String name) {
+		System.out.print(name);
 		if (name == null)
 			return name;
 		for (Entry<String, String> entry : propMap.entrySet()) {
@@ -62,6 +63,7 @@ public class XmlSourceServiceImpl implements SourceService {
 			if (key != null && !"".equals(key.trim()) && name.indexOf(key) > 0)
 				name = name.replace(keyPrefix + key + keySuffix, value);
 		}
+		System.out.println(" - "+name);
 		return name;
 	}
 

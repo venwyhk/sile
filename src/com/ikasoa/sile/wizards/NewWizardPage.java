@@ -26,8 +26,6 @@ public class NewWizardPage extends WizardPage {
 	private Text projectNameText;
 
 	private Text projectVersionText;
-
-	private Text packageNameText;
 	
 	private Text configureFileUrl;
 
@@ -80,19 +78,6 @@ public class NewWizardPage extends WizardPage {
 			}
 		});
 
-		// package name
-
-		label = new Label(container, SWT.NULL);
-		label.setText("&Package Name (包名) :");
-		packageNameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		gd = new GridData(GridData.FILL_HORIZONTAL);
-		packageNameText.setLayoutData(gd);
-		packageNameText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				dialogChanged();
-			}
-		});
-
 		// configure file path
 
 		label = new Label(container, SWT.NULL);
@@ -118,8 +103,7 @@ public class NewWizardPage extends WizardPage {
 	private void initialize() {
 		projectNameText.setText("ExampleProject");
 		projectVersionText.setText("1.0");
-		packageNameText.setText("com.example");
-		configureFileUrl.setText("");
+		configureFileUrl.setText("https://raw.githubusercontent.com/venwyhk/tuangou-vu-admin/master/sile.xml");
 	}
 
 	private void dialogChanged() {
@@ -141,15 +125,6 @@ public class NewWizardPage extends WizardPage {
 			updateStatus("项目版本长度不能超过32个字符!");
 			return;
 		}
-		String packageName = getPackageName();
-		if (packageName.length() == 0) {
-			updateStatus("包名不能为空!");
-			return;
-		}
-		if (packageName.length() > 32) {
-			updateStatus("包名长度不能超过32个字符!");
-			return;
-		}
 		String configureFileUrl = getConfigureFileUrl();
 		if (configureFileUrl.length() == 0) {
 			updateStatus("配置文件地址不能为空!");
@@ -169,10 +144,6 @@ public class NewWizardPage extends WizardPage {
 
 	public String getProjectVersion() {
 		return projectVersionText.getText();
-	}
-	
-	public String getPackageName() {
-		return packageNameText.getText();
 	}
 
 	public String getConfigureFileUrl() {
