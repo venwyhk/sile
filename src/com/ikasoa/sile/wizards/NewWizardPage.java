@@ -1,5 +1,7 @@
 package com.ikasoa.sile.wizards;
 
+import org.eclipse.core.internal.content.Activator;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -26,7 +28,7 @@ public class NewWizardPage extends WizardPage {
 	private Text projectNameText;
 
 	private Text projectVersionText;
-	
+
 	private Text configureFileUrl;
 
 	private ISelection selection;
@@ -40,6 +42,8 @@ public class NewWizardPage extends WizardPage {
 		super("wizardPage");
 		setTitle("Create Sile project");
 		setDescription("创建Sile项目.");
+		setImageDescriptor(ImageDescriptor.createFromFile(NewWizardPage.class, "title_bar.png"));
+
 		this.selection = selection;
 	}
 

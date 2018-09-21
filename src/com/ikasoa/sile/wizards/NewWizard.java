@@ -207,7 +207,6 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 			IFolder parentFolder = (IFolder) folder.getParent();
 			IFolder _parentFolder = createParentFolder(parentFolder);
 			_parentFolder.create(true, true, null);
-			System.out.println("--- : " + _parentFolder.getName());
 			return parentFolder.exists() ? folder : parentFolder;
 		} else
 			return folder;
