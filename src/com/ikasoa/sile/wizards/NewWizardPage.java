@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.dialogs.FileSelectionDialog;
 import org.eclipse.ui.dialogs.ResourceListSelectionDialog;
 
 /**
@@ -47,8 +46,8 @@ public class NewWizardPage extends WizardPage {
 	 */
 	public NewWizardPage(ISelection selection) {
 		super("wizardPage");
-		setTitle("Create new project");
-		setDescription("创建新的Sile项目.");
+		setTitle("Sile Project");
+		setDescription("生成一个新的项目.");
 		setImageDescriptor(ImageDescriptor.createFromFile(NewWizardPage.class, "title_bar.png"));
 	}
 
@@ -66,7 +65,7 @@ public class NewWizardPage extends WizardPage {
 		// project name
 
 		Label label = new Label(container, SWT.NULL);
-		label.setText("&Project Name (项目名) :");
+		label.setText("&Project Name :");
 		projectNameText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		projectNameText.setLayoutData(gd);
 		projectNameText.addModifyListener(new ModifyListener() {
@@ -79,7 +78,7 @@ public class NewWizardPage extends WizardPage {
 		// project version
 
 //		label = new Label(container, SWT.NULL);
-//		label.setText("&Project Version (项目版本) :");
+//		label.setText("&Project Version :");
 //		projectVersionText = new Text(container, SWT.BORDER | SWT.SINGLE);
 //		projectVersionText.setLayoutData(gd);
 //		projectVersionText.addModifyListener(new ModifyListener() {
