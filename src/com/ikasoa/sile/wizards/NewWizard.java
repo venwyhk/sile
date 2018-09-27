@@ -1,10 +1,12 @@
 package com.ikasoa.sile.wizards;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
+import com.ikasoa.sile.ConsoleShower;
 import com.ikasoa.sile.elements.Directory;
 import com.ikasoa.sile.elements.Sources;
 import com.ikasoa.sile.elements.DirectoryTypeEnum;
@@ -32,33 +34,21 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 
 	private NewWizardPage page;
 
-	// private EclikasoaImportWizardPage mainPage;
-
 	private IStructuredSelection selection;
 
-	/**
-	 * Constructor for EclikasoaNewWizard.
-	 */
+	private ConsoleShower consoleShower = new ConsoleShower();
+
 	public NewWizard() {
 		super();
 		setNeedsProgressMonitor(true);
 	}
 
-	/**
-	 * Adding the page to the wizard.
-	 */
 	@Override
 	public void addPages() {
 		page = new NewWizardPage(selection);
 		addPage(page);
-		// mainPage = new EclikasoaImportWizardPage("Import File",selection);
-		// addPage(mainPage);
 	}
 
-	/**
-	 * This method is called when 'Finish' button is pressed in the wizard. We will
-	 * create an operation and run it using wizard as execution context.
-	 */
 	@Override
 	public boolean performFinish() {
 
@@ -80,6 +70,7 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 			project.create(description, monitor);
 			project.open(IResource.BACKGROUND_REFRESH, new SubProgressMonitor(monitor, 1000));
 		} catch (CoreException e) {
+			errorWindow(e.getMessage());
 			return false;
 		}
 
@@ -97,20 +88,24 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 
 			javaProject.setRawClasspath(list.toArray(new IClasspathEntry[list.size()]), null);
 		} catch (JavaModelException e) {
+			errorWindow(e.getMessage());
 			return false;
 		}
 
 		try {
+
 			// 读取配置文件
-			Sources sources = new XmlSourceServiceImpl().getSrouces(new URL(page.getConfigureFileUrl()));
+			Sources sources = page.isOnlineConfigure()
+					? new XmlSourceServiceImpl().getSrouces(new URL(page.getConfigureUrl()))
+					: new XmlSourceServiceImpl().getSrouces(new File(ResourcesPlugin.getWorkspace().getRoot()
+							.getFile(Path.fromOSString(page.getConfigureFile())).getLocationURI()));
 			// 创建文件
 			buildFiles(javaProject, sources.getFileList(), null);
-			for (Directory directory : sources.getDirectoryList()) {
+			for (Directory directory : sources.getDirectoryList())
 				buildDirectory(javaProject, directory);
-			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			errorWindow(e.getMessage());
 			return false;
 		}
 
@@ -172,7 +167,7 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 
 		// 创建包
 		String packageName = buildPackage(javaProject, directory.getDirectoryList(), directory.getName());
-		System.out.println("包名 : " + packageName);
+		consoleShower.show("包名 : " + packageName);
 
 		// 创建文件
 		buildFiles(javaProject, directory.getFileList(), directory.getName());
@@ -210,6 +205,10 @@ public class NewWizard extends Wizard implements INewWizard, IImportWizard {
 			return parentFolder.exists() ? folder : parentFolder;
 		} else
 			return folder;
+	}
+
+	private void errorWindow(String message) {
+		MessageDialog.openInformation(null, "Error", message);
 	}
 
 }
