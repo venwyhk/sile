@@ -53,6 +53,7 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 	public boolean performFinish() {
 
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+//		root = Path.fromOSString(page.getLocation());
 
 		final IProject project = root.getProject(page.getProjectName());
 
@@ -85,15 +86,15 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 			List<IClasspathEntry> list = new ArrayList<>();
 			list.addAll(Arrays.asList(jreLibrary));
 			list.addAll(Arrays.asList(oldClasspathEntries));
-
 			javaProject.setRawClasspath(list.toArray(new IClasspathEntry[list.size()]), null);
 		} catch (JavaModelException e) {
 			errorWindow(e.getMessage());
 			return false;
 		}
+		
+		consoleShower.show("Build Project Complete .");
 
 		try {
-
 			// 读取配置文件
 			Sources sources = page.isOnlineConfigure()
 					? new XmlSourceServiceImpl().getSrouces(new URL(page.getConfigureFileUrl()))
@@ -103,11 +104,12 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 			buildFiles(javaProject, sources.getFileList(), null);
 			for (Directory directory : sources.getDirectoryList())
 				buildDirectory(javaProject, directory);
-
 		} catch (Exception e) {
 			errorWindow(e.getMessage());
 			return false;
 		}
+		
+		consoleShower.show("Build Codes Complete .");
 
 		return true;
 	}
@@ -127,6 +129,7 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 			if (path != null)
 				fileName = path + File.separator + file.getName();
 			javaProject.getProject().getFile(fileName).create(inputStream, true, new NullProgressMonitor());
+			consoleShower.show("Builded file : " + fileName);
 		}
 	}
 
@@ -167,7 +170,7 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 
 		// 创建包
 		String packageName = buildPackage(javaProject, directory.getDirectoryList(), directory.getName());
-		consoleShower.show("包名 : " + packageName);
+		consoleShower.show("Builded package : " + packageName);
 
 		// 创建文件
 		buildFiles(javaProject, directory.getFileList(), directory.getName());
@@ -194,6 +197,7 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 			createParentFolder(folder);
 			folder.create(true, true, null);
 		}
+		consoleShower.show("Builded folder : " + name);
 		return folder;
 	}
 

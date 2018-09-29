@@ -2,6 +2,7 @@ package com.ikasoa.sile.wizards;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -21,61 +22,75 @@ import org.eclipse.ui.dialogs.ResourceListSelectionDialog;
 
 public class SileWizardPage extends WizardPage {
 
-	private Text projectNameText;
+	private Text projectName;
+
+	private Text location;
 
 	private Group configureGroup;
 
 	private Text configureFile;
-	
+
 	private Text configureFileUrl;
 
 	private boolean isOnlineConfigure = false;
 
 	public SileWizardPage(ISelection selection) {
-		super("Sile Setting Page", "Sile Code Generator", ImageDescriptor.createFromFile(SileWizardPage.class, "title_bar.png"));
+		super("Sile Setting Page", "Sile Code Generator",
+				ImageDescriptor.createFromFile(SileWizardPage.class, "title_bar.png"));
 		setDescription("生成一个新的项目.");
 	}
 
 	@Override
 	public void createControl(Composite parent) {
-		
-		Composite container = new Composite(parent, SWT.NULL);
-		GridLayout layout = new GridLayout();
-		container.setLayout(layout);
-		layout.numColumns = 1;
-		layout.verticalSpacing = 9;
 
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		Composite composite = new Composite(parent, SWT.NULL);
+		composite.setLayout(getGridLayout(3));
+		composite.setFont(parent.getFont());
 
 		// project name
 
-		Label label = new Label(container, SWT.NULL);
-		label.setText("&Project Name :");
-		projectNameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		projectNameText.setLayoutData(gd);
-		projectNameText.addModifyListener(new ModifyListener() {
+		Label label = new Label(composite, SWT.NULL);
+		label.setText("&Project name :");
+		label.setFont(composite.getFont());
+		projectName = new Text(composite, SWT.BORDER | SWT.SINGLE);
+		projectName.setLayoutData(getGridData(2));
+		projectName.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
 		});
-		label = new Label(container, SWT.NULL);
+		projectName.setText("ExampleProject"); // 默认值
+
+		// location
+
+		label = new Label(composite, SWT.NULL);
+		label.setText("&Location :");
+		label.setFont(composite.getFont());
+		location = new Text(composite, SWT.BORDER | SWT.SINGLE);
+		location.setLayoutData(getGridData(2));
+		location.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				dialogChanged();
+			}
+		});
+		location.setText(Platform.getLocation().toOSString()); // 默认值
 
 		// group
-		configureGroup = new org.eclipse.swt.widgets.Group(container, SWT.NONE);
-		configureGroup.setText("&Source Configure");
-		configureGroup.setLayout(layout);
-		gd = new org.eclipse.swt.layout.GridData();
-		gd.grabExcessHorizontalSpace = true;
-		gd.horizontalAlignment = org.eclipse.swt.SWT.FILL;
-		configureGroup.setLayoutData(gd);
+
+		configureGroup = new Group(composite, SWT.NONE);
+		configureGroup.setText("&Source configure");
+		configureGroup.setFont(composite.getFont());
+		configureGroup.setLayout(getGridLayout(3));
+		configureGroup.setLayoutData(getGridData(3));
 
 		// configure file
 
 		Button cb1 = new Button(configureGroup, SWT.RADIO);
-		cb1.setText("&Configure File :");
+		cb1.setText("&Configure file :");
+		cb1.setFont(configureGroup.getFont());
 		cb1.setSelection(true);
 		configureFile = new Text(configureGroup, SWT.BORDER | SWT.SINGLE);
-		configureFile.setLayoutData(gd);
+		configureFile.setLayoutData(getGridData(1));
 		configureFile.setEditable(false);
 		configureFile.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
@@ -84,28 +99,13 @@ public class SileWizardPage extends WizardPage {
 		});
 		Button browseButton = new Button(configureGroup, SWT.PUSH);
 		browseButton.setText("Browse...");
+		browseButton.setFont(configureGroup.getFont());
 		browseButton.setEnabled(true); // 默认选中
 		browseButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				handleBrowse();
 			}
 		});
-		label = new Label(container, SWT.NULL);
-
-		// configure file path
-
-		Button cb2 = new Button(configureGroup, SWT.RADIO);
-		cb2.setText("&Configure File URL :");
-		configureFileUrl = new Text(configureGroup, SWT.BORDER | SWT.SINGLE);
-		configureFileUrl.setLayoutData(gd);
-		configureFileUrl.setEnabled(false);
-		configureFileUrl.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				dialogChanged();
-			}
-		});
-		label = new Label(container, SWT.NULL);
-
 		cb1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				browseButton.setEnabled(true);
@@ -113,22 +113,66 @@ public class SileWizardPage extends WizardPage {
 				isOnlineConfigure = false;
 			}
 		});
-		cb2.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				configureFileUrl.setEnabled(true);
-				browseButton.setEnabled(false);
-				isOnlineConfigure = true;
+
+		// configure file url
+
+		Button cb2 = new Button(configureGroup, SWT.RADIO);
+		cb2.setText("&Configure file URL :");
+		cb2.setFont(configureGroup.getFont());
+		configureFileUrl = new Text(configureGroup, SWT.BORDER | SWT.SINGLE);
+		configureFileUrl.setLayoutData(getGridData(2));
+		configureFileUrl.setEnabled(false);
+		configureFileUrl.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				dialogChanged();
 			}
 		});
+		configureFileUrl.setText("https://"); // https://raw.githubusercontent.com/venwyhk/tuangou-vu-admin/master/sile.xml
 
-		initialize();
 		dialogChanged();
-		setControl(container);
+		setControl(composite);
 	}
 
-	private void initialize() {
-		projectNameText.setText("ExampleProject");
-		configureFileUrl.setText("https://"); // https://raw.githubusercontent.com/venwyhk/tuangou-vu-admin/master/sile.xml
+	private void dialogChanged() {
+		String projectName = getProjectName();
+		if (projectName.length() == 0) {
+			updateStatus("项目名不能为空!");
+			return;
+		}
+		if (projectName.length() > 32) {
+			updateStatus("项目名长度不能超过32个字符!");
+			return;
+		}
+		String configureFile = getConfigureFile();
+		if (!isOnlineConfigure() && configureFile.length() == 0) {
+			updateStatus("请选择配置文件.");
+			return;
+		}
+		String configureFileUrl = getConfigureFileUrl();
+		if (isOnlineConfigure() && configureFileUrl.length() == 0) {
+			updateStatus("配置文件地址不能为空!");
+			return;
+		}
+		updateStatus(null);
+	}
+
+	private void updateStatus(String message) {
+		setErrorMessage(message);
+		setPageComplete(message == null);
+	}
+
+	private GridLayout getGridLayout(int numColumns) {
+		GridLayout layout = new GridLayout(numColumns, false);
+		layout.verticalSpacing = 10;
+		return layout;
+	}
+
+	private GridData getGridData(int span) {
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.grabExcessHorizontalSpace = true;
+		gd.horizontalAlignment = SWT.FILL;
+		gd.horizontalSpan = span;
+		return gd;
 	}
 
 	private void handleBrowse() {
@@ -150,44 +194,20 @@ public class SileWizardPage extends WizardPage {
 		}
 	}
 
-	private void dialogChanged() {
-		String projectName = getProjectName();
-		if (projectName.length() == 0) {
-			updateStatus("项目名不能为空!");
-			return;
-		}
-		if (projectName.length() > 32) {
-			updateStatus("项目名长度不能超过32个字符!");
-			return;
-		}
-		String configureFile = getConfigureFile();
-		if (!isOnlineConfigure() && configureFile.length() == 0) {
-			updateStatus("请选择配置文件.");
-			return;
-		}
-		String configureUrl = getConfigureFileUrl();
-		if (isOnlineConfigure() && configureUrl.length() == 0) {
-			updateStatus("配置文件地址不能为空!");
-			return;
-		}
-		updateStatus(null);
-	}
-
-	private void updateStatus(String message) {
-		setErrorMessage(message);
-		setPageComplete(message == null);
-	}
-
 	public String getProjectName() {
-		return projectNameText.getText();
+		return projectName != null ? projectName.getText() : "";
+	}
+
+	public String getLocation() {
+		return location != null ? location.getText() : Platform.getLocation().toOSString();
 	}
 
 	public String getConfigureFileUrl() {
-		return configureFileUrl.getText();
+		return configureFileUrl != null ? configureFileUrl.getText() : "";
 	}
 
 	public String getConfigureFile() {
-		return configureFile.getText();
+		return configureFile != null ? configureFile.getText() : "";
 	}
 
 	public boolean isOnlineConfigure() {
