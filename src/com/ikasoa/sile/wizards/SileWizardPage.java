@@ -144,21 +144,19 @@ public class SileWizardPage extends WizardPage {
 	private void dialogChanged() {
 		String projectName = getProjectName();
 		if (projectName.length() == 0) {
-			updateStatus("项目名不能为空!");
+			updateStatus("Enter a project name.");
 			return;
 		}
 		if (projectName.length() > 32) {
-			updateStatus("项目名长度不能超过32个字符!");
+			updateStatus("Project name too long.");
 			return;
 		}
-		String configureFile = getConfigureFile();
-		if (!isOnlineConfigure() && configureFile.length() == 0) {
-			updateStatus("请选择配置文件.");
+		if (!isOnlineConfigure() && getConfigureFile().length() == 0) {
+			updateStatus("Select a configure file.");
 			return;
 		}
-		String configureFileUrl = getConfigureFileUrl();
-		if (isOnlineConfigure() && configureFileUrl.length() == 0) {
-			updateStatus("配置文件地址不能为空!");
+		if (isOnlineConfigure() && getConfigureFileUrl().length() == 0) {
+			updateStatus("Configure file URL is null.");
 			return;
 		}
 		updateStatus(null);
@@ -189,16 +187,13 @@ public class SileWizardPage extends WizardPage {
 				IResource.DEPTH_INFINITE | IResource.FOLDER | IResource.FILE) {
 			protected String adjustPattern() {
 				String s = super.adjustPattern();
-				if (s.equals(""))
-					s = "*.xml";
-				return s;
+				return s.equals("") ? "*.xml" : s;
 			}
 		};
 		if (dialog.open() == ResourceListSelectionDialog.OK) {
 			Object[] result = dialog.getResult();
-			if (result.length == 1) {
+			if (result.length == 1)
 				configureFile.setText(result[0].toString().replaceAll("L/", ""));
-			}
 		}
 	}
 

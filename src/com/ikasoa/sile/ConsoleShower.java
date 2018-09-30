@@ -14,7 +14,7 @@ public class ConsoleShower {
 
 	private IConsoleManager consoleManager = null;
 
-	private final String CONSOLE_NAME = "Console";
+	private final static String CONSOLE_NAME = "Console";
 
 	public ConsoleShower() {
 		consoleManager = ConsolePlugin.getDefault().getConsoleManager();
