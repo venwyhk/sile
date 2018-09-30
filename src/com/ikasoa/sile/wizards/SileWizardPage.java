@@ -68,6 +68,7 @@ public class SileWizardPage extends WizardPage {
 		label.setFont(composite.getFont());
 		location = new Text(composite, SWT.BORDER | SWT.SINGLE);
 		location.setLayoutData(getGridData(2));
+		location.setEnabled(false);
 		location.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
@@ -119,6 +120,13 @@ public class SileWizardPage extends WizardPage {
 		Button cb2 = new Button(configureGroup, SWT.RADIO);
 		cb2.setText("&Configure file URL :");
 		cb2.setFont(configureGroup.getFont());
+		cb2.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				configureFileUrl.setEnabled(true);
+				browseButton.setEnabled(false);
+				isOnlineConfigure = true;
+			}
+		});
 		configureFileUrl = new Text(configureGroup, SWT.BORDER | SWT.SINGLE);
 		configureFileUrl.setLayoutData(getGridData(2));
 		configureFileUrl.setEnabled(false);
