@@ -35,7 +35,7 @@ public class SileWizardPage extends WizardPage {
 	private boolean isOnlineConfigure = false;
 
 	public SileWizardPage(ISelection selection) {
-		super("Sile Setting Page", "Sile Code Generator",
+		super("Sile Setting Page", "Sile Codegen",
 				ImageDescriptor.createFromFile(SileWizardPage.class, "title_bar.png"));
 		setDescription("生成一个新的项目.");
 	}

@@ -9,7 +9,7 @@
             id="Sile">
       </category>
       <wizard
-            name="Sile Code Generator"
+            name="Sile Codegen"
             icon="icons/logo.png"
             category="Sile"
             class="com.ikasoa.sile.wizards.SileNewWizard"
