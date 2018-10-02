@@ -73,10 +73,8 @@ public class SileWizardPage extends WizardPage {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 				String name = getProjectName();
-				if (name != null && name.indexOf(File.separator) >= 0)
-					setProjectName(name.replaceAll(File.separator, "")); // 项目名不允许有空格
-				else if (name != null && name.indexOf(" ") >= 0)
-					setProjectName(name.replaceAll(" ", "")); // 项目名不允许有separator
+				if (name != null && (name.indexOf(File.separator) >= 0 || name.indexOf(" ") >= 0))
+					setProjectName(name.replaceAll(File.separator, "").replaceAll(" ", "")); // 项目名不允许有separator和空格
 				else if (syncLock)
 					syncLocation();
 			}
@@ -108,9 +106,10 @@ public class SileWizardPage extends WizardPage {
 
 		locationCheck.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (location.getEnabled())
+				if (location.getEnabled()) {
 					location.setEnabled(false);
-				else {
+					setLocation(Platform.getLocation().toOSString() + File.separator + getProjectName());
+				} else {
 					location.setEnabled(true);
 					location.setFocus();
 				}
@@ -183,67 +182,7 @@ public class SileWizardPage extends WizardPage {
 		dialogChanged();
 		setControl(composite);
 	}
-
-	private void dialogChanged() {
-		String projectName = getProjectName();
-		if (projectName.length() == 0) {
-			updateStatus("Enter a project name.");
-			return;
-		}
-		if (projectName.length() > 32) {
-			updateStatus("Project name too long.");
-			return;
-		}
-		if (!isUseDefaultSelected() && getLocation().length() == 0) {
-			updateStatus("Location is null.");
-			return;
-		}
-		if (!isOnlineConfigure() && getConfigureFile().length() == 0) {
-			updateStatus("Select a configure file.");
-			return;
-		}
-		String configureFileUrl = getConfigureFileUrl();
-		if (isOnlineConfigure() && configureFileUrl.length() == 0) {
-			updateStatus("Configure file URL is null.");
-			return;
-		}
-		if (isOnlineConfigure() && (configureFileUrl.indexOf(".") == -1
-				|| (configureFileUrl.indexOf("http://") != 0 && configureFileUrl.indexOf("https://") != 0))) {
-			updateStatus("Configure file URL error.");
-			return;
-		}
-		String configureFileUrlSuffix = configureFileUrl.substring(configureFileUrl.lastIndexOf("."));
-		if (isOnlineConfigure() && !CONFIGURE_SUFFIX.equalsIgnoreCase(configureFileUrlSuffix.trim().toLowerCase())) {
-			updateStatus("Configure file type must be XML.");
-			return;
-		}
-		updateStatus(null);
-	}
-
-	private synchronized void syncProjectName() {
-		String locationText = getLocation();
-		if (locationText != null) {
-			syncLock = false;
-			setProjectName(locationText.substring(locationText.lastIndexOf(File.separator) + 1));
-			syncLock = true;
-		}
-	}
-
-	private synchronized void syncLocation() {
-		String locationText = getLocation();
-		if (locationText != null) {
-			syncLock = false;
-			setLocation(locationText.substring(0, locationText.lastIndexOf(File.separator)) + File.separator
-					+ getProjectName());
-			syncLock = true;
-		}
-	}
-
-	private void updateStatus(String message) {
-		setErrorMessage(message);
-		setPageComplete(message == null);
-	}
-
+	
 	private GridLayout getGridLayout(int numColumns) {
 		GridLayout layout = new GridLayout(numColumns, false);
 		layout.verticalSpacing = 10;
@@ -272,6 +211,83 @@ public class SileWizardPage extends WizardPage {
 			if (result.length == 1)
 				configureFile.setText(result[0].toString().replaceAll("L/", ""));
 		}
+	}
+
+	private synchronized void syncProjectName() {
+		String locationText = getLocation();
+		if (locationText != null) {
+			syncLock = false;
+			setProjectName(locationText.substring(locationText.lastIndexOf(File.separator) + 1));
+			syncLock = true;
+		}
+	}
+
+	private synchronized void syncLocation() {
+		String locationText = getLocation();
+		if (locationText != null) {
+			syncLock = false;
+			setLocation((locationText.indexOf(File.separator) >= 0
+					? locationText.substring(0, locationText.lastIndexOf(File.separator))
+					: Platform.getLocation().toOSString()) + File.separator + getProjectName());
+			syncLock = true;
+		}
+	}
+
+	private void dialogChanged() {
+		String projectName = getProjectName();
+		if (projectName.length() == 0) {
+			updateStatus("Enter a project name.");
+			return;
+		}
+		if (projectName.length() > 32) {
+			updateStatus("Project name too long.");
+			return;
+		}
+		if (!isUseDefaultSelected()) {
+			String location = getLocation();
+			if (location.length() == 0) {
+				updateStatus("Enter a location.");
+				return;
+			}
+			if (location.indexOf(File.separator) == -1) {
+				updateStatus("Location error.");
+				return;
+			}
+		}
+		if (!isOnlineConfigure()) {
+			String configureFile = getConfigureFile();
+			if (configureFile.length() == 0) {
+				updateStatus("Select a configure file.");
+				return;
+			}
+			String configureFileSuffix = configureFile.substring(configureFile.lastIndexOf("."));
+			if (!CONFIGURE_SUFFIX.equalsIgnoreCase(configureFileSuffix.trim().toLowerCase())) {
+				updateStatus("Configure file type must be XML.");
+				return;
+			}
+		} else {
+			String configureFileUrl = getConfigureFileUrl();
+			if (configureFileUrl.length() == 0) {
+				updateStatus("Enter a configure file URL.");
+				return;
+			}
+			if (configureFileUrl.indexOf(".") == -1
+					|| (configureFileUrl.indexOf("http://") != 0 && configureFileUrl.indexOf("https://") != 0)) {
+				updateStatus("Configure file URL error.");
+				return;
+			}
+			String configureFileUrlSuffix = configureFileUrl.substring(configureFileUrl.lastIndexOf("."));
+			if (!CONFIGURE_SUFFIX.equalsIgnoreCase(configureFileUrlSuffix.trim().toLowerCase())) {
+				updateStatus("Configure file type must be XML.");
+				return;
+			}
+		}
+		updateStatus(null);
+	}
+
+	private void updateStatus(String message) {
+		setErrorMessage(message);
+		setPageComplete(message == null);
 	}
 
 	public String getProjectName() {
