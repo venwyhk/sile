@@ -2,6 +2,12 @@ package com.ikasoa.sile.elements;
 
 import java.util.List;
 
+/**
+ * Sources
+ * 
+ * @author <a href="mailto:larry7696@gmail.com">Larry</a>
+ * @version 0.1
+ */
 public class Sources {
 
 	public final static String DIRECTORY = "directory";

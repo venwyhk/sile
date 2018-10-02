@@ -6,6 +6,12 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+/**
+ * ConsoleShower
+ * 
+ * @author <a href="mailto:larry7696@gmail.com">Larry</a>
+ * @version 0.1
+ */
 public class ConsoleShower {
 
 	private MessageConsole console = null;
@@ -14,7 +20,7 @@ public class ConsoleShower {
 
 	private IConsoleManager consoleManager = null;
 
-	private final String CONSOLE_NAME = "Console";
+	private final static String CONSOLE_NAME = "Console";
 
 	public ConsoleShower() {
 		consoleManager = ConsolePlugin.getDefault().getConsoleManager();

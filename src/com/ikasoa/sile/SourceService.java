@@ -5,6 +5,12 @@ import java.net.URL;
 
 import com.ikasoa.sile.elements.Sources;
 
+/**
+ * SourceService
+ * 
+ * @author <a href="mailto:larry7696@gmail.com">Larry</a>
+ * @version 0.1
+ */
 public interface SourceService {
 
 	Sources getSrouces(File file) throws Exception;

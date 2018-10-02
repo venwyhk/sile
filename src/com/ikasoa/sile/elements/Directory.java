@@ -2,10 +2,16 @@ package com.ikasoa.sile.elements;
 
 import java.util.List;
 
+/**
+ * Directory
+ * 
+ * @author <a href="mailto:larry7696@gmail.com">Larry</a>
+ * @version 0.1
+ */
 public class Directory {
-	
+
 	public final static String NAME = "name";
-	
+
 	public final static String TYPE = "type";
 
 	private String name;
@@ -13,7 +19,7 @@ public class Directory {
 	private DirectoryTypeEnum type;
 
 	private List<File> fileList;
-	
+
 	private List<Directory> directoryList;
 
 	public Directory(String name, DirectoryTypeEnum type, List<File> fileList) {

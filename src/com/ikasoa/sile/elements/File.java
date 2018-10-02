@@ -1,9 +1,15 @@
 package com.ikasoa.sile.elements;
 
+/**
+ * File
+ * 
+ * @author <a href="mailto:larry7696@gmail.com">Larry</a>
+ * @version 0.1
+ */
 public class File {
-	
+
 	public final static String NAME = "name";
-	
+
 	public final static String URL = "url";
 
 	private String name;

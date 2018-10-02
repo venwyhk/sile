@@ -1,5 +1,7 @@
 package com.ikasoa.sile.wizards;
 
+import java.io.File;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
@@ -20,9 +22,19 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ResourceListSelectionDialog;
 
+/**
+ * SileWizardPage
+ * 
+ * @author <a href="mailto:larry7696@gmail.com">Larry</a>
+ * @version 0.1
+ */
 public class SileWizardPage extends WizardPage {
 
+	private static final String CONFIGURE_SUFFIX = ".xml";
+
 	private Text projectName;
+
+	private Button locationCheck;
 
 	private Text location;
 
@@ -34,10 +46,12 @@ public class SileWizardPage extends WizardPage {
 
 	private boolean isOnlineConfigure = false;
 
+	private boolean syncLock = true;
+
 	public SileWizardPage(ISelection selection) {
-		super("Sile Setting Page", "Sile Code Generator",
+		super("Sile Setting Page", "Sile Codegen",
 				ImageDescriptor.createFromFile(SileWizardPage.class, "title_bar.png"));
-		setDescription("生成一个新的项目.");
+		setDescription("Create a Java (Sile) project in the workspace or in an external location.");
 	}
 
 	@Override
@@ -54,12 +68,26 @@ public class SileWizardPage extends WizardPage {
 		label.setFont(composite.getFont());
 		projectName = new Text(composite, SWT.BORDER | SWT.SINGLE);
 		projectName.setLayoutData(getGridData(2));
+		projectName.setText(""); // 默认值
 		projectName.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
+				String name = getProjectName();
+				if (name != null && name.indexOf(File.separator) >= 0)
+					setProjectName(name.replaceAll(File.separator, "")); // 项目名不允许有空格
+				else if (name != null && name.indexOf(" ") >= 0)
+					setProjectName(name.replaceAll(" ", "")); // 项目名不允许有separator
+				else if (syncLock)
+					syncLocation();
 			}
 		});
-		projectName.setText("ExampleProject"); // 默认值
+
+		// Use default location
+
+		locationCheck = new Button(composite, SWT.CHECK);
+		locationCheck.setText("Use default location");
+		locationCheck.setSelection(true); // 默认选中
+		locationCheck.setLayoutData(getGridData(3));
 
 		// location
 
@@ -68,12 +96,26 @@ public class SileWizardPage extends WizardPage {
 		label.setFont(composite.getFont());
 		location = new Text(composite, SWT.BORDER | SWT.SINGLE);
 		location.setLayoutData(getGridData(2));
+		location.setEnabled(false);
+		location.setText(Platform.getLocation().toOSString() + File.separator + getProjectName()); // 默认值
 		location.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
+				if (syncLock)
+					syncProjectName(); // 同步修改项目名称
 			}
 		});
-		location.setText(Platform.getLocation().toOSString()); // 默认值
+
+		locationCheck.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if (location.getEnabled())
+					location.setEnabled(false);
+				else {
+					location.setEnabled(true);
+					location.setFocus();
+				}
+			}
+		});
 
 		// group
 
@@ -111,6 +153,7 @@ public class SileWizardPage extends WizardPage {
 				browseButton.setEnabled(true);
 				configureFileUrl.setEnabled(false);
 				isOnlineConfigure = false;
+				dialogChanged();
 			}
 		});
 
@@ -119,15 +162,23 @@ public class SileWizardPage extends WizardPage {
 		Button cb2 = new Button(configureGroup, SWT.RADIO);
 		cb2.setText("&Configure file URL :");
 		cb2.setFont(configureGroup.getFont());
+		cb2.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				configureFileUrl.setEnabled(true);
+				browseButton.setEnabled(false);
+				isOnlineConfigure = true;
+				dialogChanged();
+			}
+		});
 		configureFileUrl = new Text(configureGroup, SWT.BORDER | SWT.SINGLE);
 		configureFileUrl.setLayoutData(getGridData(2));
 		configureFileUrl.setEnabled(false);
+		configureFileUrl.setText("http://"); // https://raw.githubusercontent.com/venwyhk/tuangou-vu-admin/master/sile.xml
 		configureFileUrl.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				dialogChanged();
 			}
 		});
-		configureFileUrl.setText("https://"); // https://raw.githubusercontent.com/venwyhk/tuangou-vu-admin/master/sile.xml
 
 		dialogChanged();
 		setControl(composite);
@@ -136,24 +187,52 @@ public class SileWizardPage extends WizardPage {
 	private void dialogChanged() {
 		String projectName = getProjectName();
 		if (projectName.length() == 0) {
-			updateStatus("项目名不能为空!");
+			updateStatus("Enter a project name.");
 			return;
 		}
 		if (projectName.length() > 32) {
-			updateStatus("项目名长度不能超过32个字符!");
+			updateStatus("Project name too long.");
 			return;
 		}
-		String configureFile = getConfigureFile();
-		if (!isOnlineConfigure() && configureFile.length() == 0) {
-			updateStatus("请选择配置文件.");
+		if (!isOnlineConfigure() && getConfigureFile().length() == 0) {
+			updateStatus("Select a configure file.");
 			return;
 		}
 		String configureFileUrl = getConfigureFileUrl();
 		if (isOnlineConfigure() && configureFileUrl.length() == 0) {
-			updateStatus("配置文件地址不能为空!");
+			updateStatus("Configure file URL is null.");
+			return;
+		}
+		if (isOnlineConfigure() && (configureFileUrl.indexOf(".") == -1
+				|| (configureFileUrl.indexOf("http://") != 0 && configureFileUrl.indexOf("https://") != 0))) {
+			updateStatus("Configure file URL error.");
+			return;
+		}
+		String configureFileUrlSuffix = configureFileUrl.substring(configureFileUrl.lastIndexOf("."));
+		if (isOnlineConfigure() && !CONFIGURE_SUFFIX.equalsIgnoreCase(configureFileUrlSuffix.trim().toLowerCase())) {
+			updateStatus("Configure file type must be XML.");
 			return;
 		}
 		updateStatus(null);
+	}
+
+	private synchronized void syncProjectName() {
+		String locationText = getLocation();
+		if (locationText != null) {
+			syncLock = false;
+			setProjectName(locationText.substring(locationText.lastIndexOf(File.separator) + 1));
+			syncLock = true;
+		}
+	}
+
+	private synchronized void syncLocation() {
+		String locationText = getLocation();
+		if (locationText != null) {
+			syncLock = false;
+			setLocation(locationText.substring(0, locationText.lastIndexOf(File.separator)) + File.separator
+					+ getProjectName());
+			syncLock = true;
+		}
 	}
 
 	private void updateStatus(String message) {
@@ -181,16 +260,13 @@ public class SileWizardPage extends WizardPage {
 				IResource.DEPTH_INFINITE | IResource.FOLDER | IResource.FILE) {
 			protected String adjustPattern() {
 				String s = super.adjustPattern();
-				if (s.equals(""))
-					s = "*.xml";
-				return s;
+				return s.equals("") ? "*" + CONFIGURE_SUFFIX : s;
 			}
 		};
 		if (dialog.open() == ResourceListSelectionDialog.OK) {
 			Object[] result = dialog.getResult();
-			if (result.length == 1) {
+			if (result.length == 1)
 				configureFile.setText(result[0].toString().replaceAll("L/", ""));
-			}
 		}
 	}
 
@@ -198,8 +274,22 @@ public class SileWizardPage extends WizardPage {
 		return projectName != null ? projectName.getText() : "";
 	}
 
+	public void setProjectName(String text) {
+		if (projectName != null)
+			projectName.setText(text);
+	}
+
+	public boolean isUseDefaultSelected() {
+		return locationCheck != null ? locationCheck.getSelection() : true;
+	}
+
 	public String getLocation() {
 		return location != null ? location.getText() : Platform.getLocation().toOSString();
+	}
+
+	public void setLocation(String text) {
+		if (location != null)
+			location.setText(text);
 	}
 
 	public String getConfigureFileUrl() {

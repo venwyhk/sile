@@ -21,6 +21,12 @@ import com.ikasoa.sile.elements.DirectoryTypeEnum;
 import com.ikasoa.sile.elements.File;
 import com.ikasoa.sile.elements.Sources;
 
+/**
+ * XmlSourceServiceImpl
+ * 
+ * @author <a href="mailto:larry7696@gmail.com">Larry</a>
+ * @version 0.1
+ */
 public class XmlSourceServiceImpl implements SourceService {
 
 	private final static String PROPERTIES = "properties";
@@ -54,7 +60,6 @@ public class XmlSourceServiceImpl implements SourceService {
 
 	@Override
 	public String replace(String name) {
-		System.out.print(name);
 		if (name == null)
 			return name;
 		for (Entry<String, String> entry : propMap.entrySet()) {
@@ -63,7 +68,6 @@ public class XmlSourceServiceImpl implements SourceService {
 			if (key != null && !"".equals(key.trim()) && name.indexOf(key) > 0)
 				name = name.replace(keyPrefix + key + keySuffix, value);
 		}
-		System.out.println(" - "+name);
 		return name;
 	}
 
@@ -152,19 +156,7 @@ public class XmlSourceServiceImpl implements SourceService {
 	}
 
 	private String getFileName(String fileUrl) {
-		return fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-	}
-
-	public static void main(String[] args) {
-		try {
-			SourceService xs = new XmlSourceServiceImpl();
-//			System.out.println(xs.getSrouces(new java.io.File("src/sile.xml")));
-			System.out.println(xs.getSrouces(new URL("https://raw.githubusercontent.com/venwyhk/tuangou-vu-admin/master/sile.xml")));
-			// System.out.println(new XmlSourceServiceImpl()
-			// .getFileName("https://raw.githubusercontent.com/ginnosgroup/tuangou-vu-admin/master/.gitignore"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		return fileUrl.substring(fileUrl.lastIndexOf(java.io.File.separator) + 1);
 	}
 
 }

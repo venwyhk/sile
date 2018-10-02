@@ -3,6 +3,7 @@ package com.ikasoa.sile.wizards;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
@@ -12,24 +13,38 @@ import com.ikasoa.sile.elements.Sources;
 import com.ikasoa.sile.elements.DirectoryTypeEnum;
 import com.ikasoa.sile.xml.XmlSourceServiceImpl;
 
-import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.PreferenceConstants;
 
+import java.io.File;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.SubProgressMonitor;
 
-import java.io.*;
-import org.eclipse.ui.*;
-
+/**
+ * SileNewWizard
+ * 
+ * @author <a href="mailto:larry7696@gmail.com">Larry</a>
+ * @version 0.1
+ */
 public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 
 	private SileWizardPage page;
@@ -52,14 +67,21 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 	@Override
 	public boolean performFinish() {
 
-		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-//		root = Path.fromOSString(page.getLocation());
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		String name = page.getProjectName();
+		IWorkspaceRoot root = workspace.getRoot();
+		IProject project = root.getProject(name);
 
-		final IProject project = root.getProject(page.getProjectName());
+		// 判断项目是否已存在
+		if (project.exists()) {
+			errorWindow("Project " + name + " is exists.");
+			return false;
+		}
 
-		IWorkspace workspace = root.getWorkspace();
-		final IProjectDescription description = workspace.newProjectDescription(project.getName());
-
+		IProjectDescription description = workspace.newProjectDescription(name);
+		if (!page.isUseDefaultSelected())
+			description.setLocation(Path.fromOSString(page.getLocation()));
+		
 		String[] javaNature = description.getNatureIds();
 		String[] newJavaNature = new String[javaNature.length + 1];
 		System.arraycopy(javaNature, 0, newJavaNature, 0, javaNature.length);
@@ -91,8 +113,8 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 			errorWindow(e.getMessage());
 			return false;
 		}
-		
-		consoleShower.show("Build Project Complete .");
+
+		consoleShower.show("Build Project Complete.");
 
 		try {
 			// 读取配置文件
@@ -108,8 +130,8 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 			errorWindow(e.getMessage());
 			return false;
 		}
-		
-		consoleShower.show("Build Codes Complete .");
+
+		consoleShower.show("Build Codes Complete.");
 
 		return true;
 	}
