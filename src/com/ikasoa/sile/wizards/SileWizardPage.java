@@ -50,7 +50,7 @@ public class SileWizardPage extends WizardPage {
 
 	public SileWizardPage(ISelection selection) {
 		super("Sile Setting Page", "Sile Codegen",
-				ImageDescriptor.createFromFile(SileWizardPage.class, "title_bar.png"));
+				ImageDescriptor.createFromFile(SileWizardPage.class, "title_banner.png"));
 		setDescription("Create a Java (Sile) project in the workspace or in an external location.");
 	}
 
@@ -182,7 +182,7 @@ public class SileWizardPage extends WizardPage {
 		dialogChanged();
 		setControl(composite);
 	}
-	
+
 	private GridLayout getGridLayout(int numColumns) {
 		GridLayout layout = new GridLayout(numColumns, false);
 		layout.verticalSpacing = 10;
