@@ -37,7 +37,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.SubProgressMonitor;
 
 /**
  * SileNewWizard
@@ -81,7 +80,7 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 		IProjectDescription description = workspace.newProjectDescription(name);
 		if (!page.isUseDefaultSelected())
 			description.setLocation(Path.fromOSString(page.getLocation()));
-		
+
 		String[] javaNature = description.getNatureIds();
 		String[] newJavaNature = new String[javaNature.length + 1];
 		System.arraycopy(javaNature, 0, newJavaNature, 0, javaNature.length);
@@ -91,30 +90,31 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 		try {
 			NullProgressMonitor monitor = new NullProgressMonitor();
 			project.create(description, monitor);
-			project.open(IResource.BACKGROUND_REFRESH, new SubProgressMonitor(monitor, 1000));
+			if (!project.isOpen())
+				project.open(IResource.BACKGROUND_REFRESH, monitor);
 		} catch (CoreException e) {
 			errorWindow(e.getMessage());
 			return false;
 		}
 
+		consoleShower.show("Create project " + name + ".");
+
 		// 转化成java工程
 		IJavaProject javaProject = JavaCore.create(project);
 
 		try {
-			// 获取默认的JRE库
-			IClasspathEntry[] jreLibrary = PreferenceConstants.getDefaultJRELibrary();
-			// 获取原来的build path
-			IClasspathEntry[] oldClasspathEntries = javaProject.getRawClasspath();
 			List<IClasspathEntry> list = new ArrayList<>();
-			list.addAll(Arrays.asList(jreLibrary));
-			list.addAll(Arrays.asList(oldClasspathEntries));
+			// 获取默认的JRE库
+			list.addAll(Arrays.asList(PreferenceConstants.getDefaultJRELibrary()));
+			// 获取原来的build path
+			list.addAll(Arrays.asList(javaProject.getRawClasspath()));
 			javaProject.setRawClasspath(list.toArray(new IClasspathEntry[list.size()]), null);
 		} catch (JavaModelException e) {
 			errorWindow(e.getMessage());
 			return false;
 		}
 
-		consoleShower.show("Build Project Complete.");
+		consoleShower.show("Start build.");
 
 		try {
 			// 读取配置文件
@@ -131,7 +131,7 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 			return false;
 		}
 
-		consoleShower.show("Build Codes Complete.");
+		consoleShower.show("Build complete.");
 
 		return true;
 	}
@@ -144,14 +144,14 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 	private void buildFiles(IJavaProject javaProject, List<com.ikasoa.sile.elements.File> fileList, String path)
 			throws Exception {
 		for (com.ikasoa.sile.elements.File file : fileList) {
-			URL u = new URL(file.getUrl());
-			HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+			URL url = new URL(file.getUrl());
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			InputStream inputStream = conn.getInputStream();
 			String fileName = file.getName();
 			if (path != null)
 				fileName = path + File.separator + file.getName();
+			consoleShower.show("Create file : " + fileName);
 			javaProject.getProject().getFile(fileName).create(inputStream, true, new NullProgressMonitor());
-			consoleShower.show("Builded file : " + fileName);
 		}
 	}
 
@@ -216,10 +216,10 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 	private IFolder buildFolder(IJavaProject javaProject, String name) throws Exception {
 		IFolder folder = javaProject.getProject().getFolder(name);
 		if (!folder.exists()) {
+			consoleShower.show("Create folder : " + name);
 			createParentFolder(folder);
 			folder.create(true, true, null);
 		}
-		consoleShower.show("Builded folder : " + name);
 		return folder;
 	}
 
@@ -234,6 +234,7 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 	}
 
 	private void errorWindow(String message) {
+		consoleShower.show("Error : " + message);
 		MessageDialog.openInformation(null, "Error", message);
 	}
 

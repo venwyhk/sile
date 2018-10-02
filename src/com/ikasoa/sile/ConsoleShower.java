@@ -1,5 +1,7 @@
 package com.ikasoa.sile;
 
+import java.util.Date;
+
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -37,7 +39,7 @@ public class ConsoleShower {
 	public void show(String message) {
 		if (message != null) {
 			consoleManager.showConsoleView(console);
-			consoleStream.print(message + "\n");
+			consoleStream.print("[" + new Date().toString() + "] " + message + "\n");
 		}
 	}
 
