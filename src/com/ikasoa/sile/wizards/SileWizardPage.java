@@ -194,6 +194,10 @@ public class SileWizardPage extends WizardPage {
 			updateStatus("Project name too long.");
 			return;
 		}
+		if (!isUseDefaultSelected() && getLocation().length() == 0) {
+			updateStatus("Location is null.");
+			return;
+		}
 		if (!isOnlineConfigure() && getConfigureFile().length() == 0) {
 			updateStatus("Select a configure file.");
 			return;
