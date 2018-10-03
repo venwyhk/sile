@@ -1,4 +1,4 @@
-package com.ikasoa.sile.wizards;
+package com.ikasoa.eclipse.sile.wizards;
 
 import java.io.File;
 

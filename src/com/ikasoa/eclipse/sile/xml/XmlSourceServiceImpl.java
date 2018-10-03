@@ -1,4 +1,4 @@
-package com.ikasoa.sile.xml;
+package com.ikasoa.eclipse.sile.xml;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -15,11 +15,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.ikasoa.sile.SourceService;
-import com.ikasoa.sile.elements.Directory;
-import com.ikasoa.sile.elements.DirectoryTypeEnum;
-import com.ikasoa.sile.elements.File;
-import com.ikasoa.sile.elements.Sources;
+import com.ikasoa.eclipse.sile.SourceService;
+import com.ikasoa.eclipse.sile.elements.Directory;
+import com.ikasoa.eclipse.sile.elements.DirectoryTypeEnum;
+import com.ikasoa.eclipse.sile.elements.File;
+import com.ikasoa.eclipse.sile.elements.Sources;
 
 /**
  * XmlSourceServiceImpl

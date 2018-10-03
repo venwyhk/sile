@@ -1,4 +1,4 @@
-package com.ikasoa.sile;
+package com.ikasoa.eclipse.sile;
 
 import java.util.Date;
 

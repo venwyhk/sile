@@ -1,4 +1,4 @@
-package com.ikasoa.sile.elements;
+package com.ikasoa.eclipse.sile.elements;
 
 /**
  * File

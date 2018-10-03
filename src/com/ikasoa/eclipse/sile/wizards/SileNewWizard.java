@@ -1,4 +1,4 @@
-package com.ikasoa.sile.wizards;
+package com.ikasoa.eclipse.sile.wizards;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -7,11 +7,11 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
-import com.ikasoa.sile.ConsoleShower;
-import com.ikasoa.sile.elements.Directory;
-import com.ikasoa.sile.elements.Sources;
-import com.ikasoa.sile.elements.DirectoryTypeEnum;
-import com.ikasoa.sile.xml.XmlSourceServiceImpl;
+import com.ikasoa.eclipse.sile.ConsoleShower;
+import com.ikasoa.eclipse.sile.elements.Directory;
+import com.ikasoa.eclipse.sile.elements.DirectoryTypeEnum;
+import com.ikasoa.eclipse.sile.elements.Sources;
+import com.ikasoa.eclipse.sile.xml.XmlSourceServiceImpl;
 
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -141,9 +141,9 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 		this.selection = selection;
 	}
 
-	private void buildFiles(IJavaProject javaProject, List<com.ikasoa.sile.elements.File> fileList, String path)
+	private void buildFiles(IJavaProject javaProject, List<com.ikasoa.eclipse.sile.elements.File> fileList, String path)
 			throws Exception {
-		for (com.ikasoa.sile.elements.File file : fileList) {
+		for (com.ikasoa.eclipse.sile.elements.File file : fileList) {
 			URL url = new URL(file.getUrl());
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			InputStream inputStream = conn.getInputStream();

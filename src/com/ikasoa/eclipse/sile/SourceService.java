@@ -1,9 +1,9 @@
-package com.ikasoa.sile;
+package com.ikasoa.eclipse.sile;
 
 import java.io.File;
 import java.net.URL;
 
-import com.ikasoa.sile.elements.Sources;
+import com.ikasoa.eclipse.sile.elements.Sources;
 
 /**
  * SourceService
