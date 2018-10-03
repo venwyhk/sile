@@ -11,8 +11,8 @@
             name="Sile Codegen"
             icon="icons/logo.png"
             category="Sile"
-            class="com.ikasoa.sile.wizards.SileNewWizard"
-            id="com.ikasoa.sile.wizards.SileNewWizard">
+            class="com.ikasoa.eclipse.sile.wizards.SileNewWizard"
+            id="com.ikasoa.eclipse.sile.wizards.SileNewWizard">
       </wizard>
    </extension>
 </plugin>

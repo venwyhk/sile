@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Sile
-Bundle-SymbolicName: com.ikasoa.sile;singleton:=true
+Bundle-SymbolicName: com.ikasoa.eclipse.sile;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Require-Bundle: org.eclipse.core.resources,
  org.eclipse.ui,
@@ -12,4 +12,4 @@ Require-Bundle: org.eclipse.core.resources,
  org.eclipse.ui.console;bundle-version="3.6"
 Automatic-Module-Name: Sile
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: ikasoa
+Bundle-Vendor: IKASOA
