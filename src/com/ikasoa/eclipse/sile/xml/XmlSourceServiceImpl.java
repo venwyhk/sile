@@ -62,6 +62,8 @@ public class XmlSourceServiceImpl implements SourceService {
 	public String replace(String name) {
 		if (name == null)
 			return name;
+		if (propMap.isEmpty())
+			throw new RuntimeException("Properties is empty.");
 		for (Entry<String, String> entry : propMap.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();

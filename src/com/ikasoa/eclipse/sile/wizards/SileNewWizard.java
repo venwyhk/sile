@@ -8,6 +8,7 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
 import com.ikasoa.eclipse.sile.ConsoleShower;
+import com.ikasoa.eclipse.sile.SourceService;
 import com.ikasoa.eclipse.sile.elements.Directory;
 import com.ikasoa.eclipse.sile.elements.DirectoryTypeEnum;
 import com.ikasoa.eclipse.sile.elements.Sources;
@@ -45,6 +46,8 @@ import org.eclipse.core.runtime.Path;
  * @version 0.1
  */
 public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
+
+	private SourceService sourceService = new XmlSourceServiceImpl();
 
 	private SileWizardPage page;
 
@@ -118,12 +121,12 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 
 		try {
 			// 读取配置文件
-			Sources sources = page.isOnlineConfigure()
-					? new XmlSourceServiceImpl().getSrouces(new URL(page.getConfigureFileUrl()))
-					: new XmlSourceServiceImpl().getSrouces(new File(ResourcesPlugin.getWorkspace().getRoot()
+			Sources sources = page.isOnlineConfigure() ? sourceService.getSrouces(new URL(page.getConfigureFileUrl()))
+					: sourceService.getSrouces(new File(ResourcesPlugin.getWorkspace().getRoot()
 							.getFile(Path.fromOSString(page.getConfigureFile())).getLocationURI()));
 			// 创建文件
 			buildFiles(javaProject, sources.getFileList(), null);
+			// 创建目录
 			for (Directory directory : sources.getDirectoryList())
 				buildDirectory(javaProject, directory);
 		} catch (Exception e) {
