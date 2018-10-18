@@ -12,6 +12,7 @@ import com.ikasoa.eclipse.sile.SourceService;
 import com.ikasoa.eclipse.sile.elements.Directory;
 import com.ikasoa.eclipse.sile.elements.DirectoryTypeEnum;
 import com.ikasoa.eclipse.sile.elements.Sources;
+import com.ikasoa.eclipse.sile.utils.StringUtil;
 import com.ikasoa.eclipse.sile.xml.XmlSourceServiceImpl;
 
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -47,11 +48,11 @@ import org.eclipse.core.runtime.Path;
  */
 public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 
-	private SourceService sourceService = new XmlSourceServiceImpl();
-
 	private SileWizardPage page;
 
 	private IStructuredSelection selection;
+
+	private SourceService sourceService = new XmlSourceServiceImpl();
 
 	private ConsoleShower consoleShower = new ConsoleShower();
 
@@ -154,7 +155,7 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 			if (path != null)
 				fileName = path + File.separator + file.getName();
 			consoleShower.show("Create file : " + fileName);
-			javaProject.getProject().getFile(fileName).create(inputStream, true, new NullProgressMonitor());
+			javaProject.getProject().getFile(fileName).create(replace(inputStream), true, new NullProgressMonitor());
 		}
 	}
 
@@ -234,6 +235,10 @@ public class SileNewWizard extends Wizard implements INewWizard, IImportWizard {
 			return parentFolder.exists() ? folder : parentFolder;
 		} else
 			return folder;
+	}
+
+	private InputStream replace(InputStream inputStream) {
+		return StringUtil.String2InputStream(sourceService.replace(StringUtil.InputStream2String(inputStream)));
 	}
 
 	private void errorWindow(String message) {
